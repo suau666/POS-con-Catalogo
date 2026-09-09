@@ -40,6 +40,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);dis
 .brand{display:flex;align-items:center;gap:14px;}
 .brand-icon{width:46px;height:46px;background:var(--blue);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden;color:#fff;}
 .shop-ico{width:64%;height:64%;}
+.ico{width:1.15em;height:1.15em;flex:0 0 auto;}
+.modal-icon{color:var(--blue);display:flex;align-items:center;}
+.modal-icon .ico{width:26px;height:26px;}
+.dz-icon .ico{width:44px;height:44px;}
+.empty-icon .ico{width:56px;height:56px;}
+.rep-sect .ico{width:18px;height:18px;vertical-align:-3px;margin-right:6px;}
+.icon-btn .ico{width:17px;height:17px;}
 .brand-name{font-size:24px;font-weight:700;color:var(--blue);letter-spacing:-0.5px;}
 .brand-sub{font-size:13px;color:var(--muted);font-weight:500;}
 .header-right{display:flex;align-items:center;gap:18px;}
@@ -208,20 +215,20 @@ td{padding:14px 20px;font-size:15px;background:#f5f5f5;color:#111;}
   <div class="header-right">
     <div class="stat-pill" id="prodCount">0 productos</div>
     <div class="clock" id="clock">--:--:--</div>
-    <button class="btn btn-ghost" onclick="openConfig()" title="Configuración" style="padding:8px 12px;font-size:18px">⚙️</button>
+    <button class="btn btn-ghost" onclick="openConfig()" title="Configuración" data-ico="gear" style="padding:9px 12px"></button>
   </div>
 </header>
 
 <div class="toolbar">
-  <button class="btn btn-primary" onclick="openImport()">📂 Importar Excel</button>
-  <button class="btn btn-ghost" onclick="openProducts()">📦 Productos</button>
-  <button class="btn btn-ghost" onclick="openReport()">📊 Reportes</button>
-  <button class="btn btn-ghost" onclick="openHistory()">🧾 Historial</button>
+  <button class="btn btn-primary" onclick="openImport()" data-ico="import">Importar Excel</button>
+  <button class="btn btn-ghost" onclick="openProducts()" data-ico="package">Productos</button>
+  <button class="btn btn-ghost" onclick="openReport()" data-ico="chart">Reportes</button>
+  <button class="btn btn-ghost" onclick="openHistory()" data-ico="receipt">Historial</button>
   <div class="tsep"></div>
   <button class="btn btn-ghost" onclick="quitarSel()">Quitar artículo <span style="opacity:.5;font-size:12px">(Del)</span></button>
-  <button class="btn btn-red" onclick="cancelarVenta()">🗑 Cancelar venta</button>
+  <button class="btn btn-red" onclick="cancelarVenta()" data-ico="trash">Cancelar venta</button>
   <div class="tsep"></div>
-  <button class="btn btn-green" style="font-size:16px;padding:11px 28px" onclick="openCobro()">Cobrar</button>
+  <button class="btn btn-green" style="font-size:16px;padding:11px 28px" onclick="openCobro()" data-ico="card">Cobrar</button>
 </div>
 
 <div class="search-bar">
@@ -253,7 +260,7 @@ td{padding:14px 20px;font-size:15px;background:#f5f5f5;color:#111;}
     <tbody id="cartBody">
       <tr><td colspan="6">
         <div class="empty-state">
-          <div class="empty-icon">🛒</div>
+          <div class="empty-icon" data-ico="cart"></div>
           <div class="empty-text">Sin productos en la venta.<br>Escaneá o escribí un nombre para comenzar.</div>
         </div>
       </td></tr>
@@ -263,9 +270,9 @@ td{padding:14px 20px;font-size:15px;background:#f5f5f5;color:#111;}
 
 <div class="bottombar">
   <div class="binfo"><strong id="itemCount">0</strong> productos · <span id="unitCount">0</span> unidades</div>
-  <button class="btn btn-red" style="font-size:16px;padding:13px 28px" onclick="cancelarVenta()">✕ Cancelar venta</button>
+  <button class="btn btn-red" style="font-size:16px;padding:13px 28px" onclick="cancelarVenta()" data-ico="trash">Cancelar venta</button>
   <div class="total-section">
-    <button class="btn btn-green" style="font-size:18px;padding:15px 36px" onclick="openCobro()">Cobrar</button>
+    <button class="btn btn-green" style="font-size:18px;padding:15px 36px" onclick="openCobro()" data-ico="card">Cobrar</button>
     <div class="total-label">Total</div>
     <div class="total-amount" id="totalAmount">$0</div>
   </div>
@@ -275,13 +282,13 @@ td{padding:14px 20px;font-size:15px;background:#f5f5f5;color:#111;}
 <div class="overlay" id="impOverlay" onclick="if(event.target===this)closeImport()">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-icon">📂</div>
+      <div class="modal-icon" data-ico="import"></div>
       <div class="modal-title">Importar Lista de Precios desde Excel</div>
     </div>
     <div class="drop-zone" id="dropZone"
       onclick="document.getElementById('xlsInput').click()"
       ondragover="dzEv(event,true)" ondragleave="dzEv(event,false)" ondrop="onDrop(event)">
-      <div class="dz-icon">📊</div>
+      <div class="dz-icon" data-ico="sheet"></div>
       <div class="dz-title">Hacé click o arrastrá el archivo aquí</div>
       <div class="dz-sub">Acepta <strong>.xls</strong> y <strong>.xlsx</strong><br>Agrega productos nuevos · Actualiza precios existentes</div>
     </div>
@@ -305,7 +312,7 @@ td{padding:14px 20px;font-size:15px;background:#f5f5f5;color:#111;}
 <div class="overlay" id="cobroOverlay" onclick="if(event.target===this)closeCobro()">
   <div class="modal cobro-modal">
     <div class="modal-header">
-      <div class="modal-icon">💳</div>
+      <div class="modal-icon" data-ico="card"></div>
       <div class="modal-title">Confirmación de Cobro</div>
     </div>
     <div class="cobro-list" id="cobroList"></div>
@@ -324,7 +331,7 @@ td{padding:14px 20px;font-size:15px;background:#f5f5f5;color:#111;}
 <div class="overlay" id="repOverlay" onclick="if(event.target===this)closeReport()">
   <div class="modal cobro-modal">
     <div class="modal-header">
-      <div class="modal-icon">📊</div>
+      <div class="modal-icon" data-ico="chart"></div>
       <div class="modal-title">Reportes de ventas</div>
     </div>
     <div id="repBody"></div>
@@ -338,7 +345,7 @@ td{padding:14px 20px;font-size:15px;background:#f5f5f5;color:#111;}
 <div class="overlay" id="cfgOverlay" onclick="if(event.target===this)closeConfig()">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-icon">⚙️</div>
+      <div class="modal-icon" data-ico="gear"></div>
       <div class="modal-title">Configuración</div>
     </div>
     <div class="cfg-field">
@@ -372,13 +379,13 @@ td{padding:14px 20px;font-size:15px;background:#f5f5f5;color:#111;}
 <div class="overlay" id="prodOverlay" onclick="if(event.target===this)closeProducts()">
   <div class="modal cobro-modal">
     <div class="modal-header">
-      <div class="modal-icon">📦</div>
+      <div class="modal-icon" data-ico="package"></div>
       <div class="modal-title">Productos</div>
     </div>
     <div id="prodListView">
       <div class="mng-top">
         <input type="text" id="prodSearch" class="search-input" placeholder="Buscar por nombre o código..." autocomplete="off" oninput="renderProducts()">
-        <button class="btn btn-green" onclick="editProduct(-1)">➕ Nuevo</button>
+        <button class="btn btn-green" onclick="editProduct(-1)" data-ico="plus">Nuevo</button>
       </div>
       <div class="mng-list" id="prodList"></div>
       <div class="modal-footer">
@@ -409,12 +416,13 @@ td{padding:14px 20px;font-size:15px;background:#f5f5f5;color:#111;}
 <div class="overlay" id="histOverlay" onclick="if(event.target===this)closeHistory()">
   <div class="modal cobro-modal">
     <div class="modal-header">
-      <div class="modal-icon">🧾</div>
+      <div class="modal-icon" data-ico="receipt"></div>
       <div class="modal-title">Historial de ventas</div>
     </div>
     <div class="mng-top">
       <input type="text" id="histSearch" class="search-input" placeholder="Buscar por producto, código o fecha..." autocomplete="off" oninput="renderHistory()">
     </div>
+    <div class="mng-note" style="text-align:left;padding:0 0 10px">Solo se conservan las ventas de los últimos 7 días para poder anularlas. Los totales quedan siempre en Reportes.</div>
     <div class="mng-list" id="histList"></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeHistory()">Cerrar</button>
@@ -429,6 +437,8 @@ const LS='pos_cunados_v1';
 const LS_CART='pos_cunados_cart_v1';
 const LS_SALES='pos_cunados_sales_v1';
 const LS_CFG='pos_cunados_config_v1';
+const LS_DAILY='pos_cunados_daily_v1';
+const SALES_KEEP_DAYS=7;
 let products=JSON.parse(localStorage.getItem(LS)||'[]');
 let cart=[],selRow=-1,sugIdx=-1,sugHits=[];
 try{cart=JSON.parse(localStorage.getItem(LS_CART)||'[]');if(!Array.isArray(cart))cart=[];}catch(e){cart=[];}
@@ -439,9 +449,30 @@ try{config=Object.assign({},CFG_DEFAULT,JSON.parse(localStorage.getItem(LS_CFG)|
 
 const SHOP_SVG='<svg class="shop-ico" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 18V12a2 2 0 0 1 2-2h28a2 2 0 0 1 2 2v6"/><path d="M8 18q3.2 4 6.4 0 3.2 4 6.4 0 3.2 4 6.4 0 3.2 4 6.4 0 3.2 4 6.4 0"/><path d="M11 19v20a1 1 0 0 0 1 1h24a1 1 0 0 0 1-1V19"/><path d="M26 40V29a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v11"/><circle cx="18" cy="29" r="3.5"/></svg>';
 
+const _S='<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+const ICON={
+  import:_S+'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  package:_S+'<path d="M16.5 9.4 7.5 4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
+  chart:_S+'<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>',
+  receipt:_S+'<path d="M6 2h12a1 1 0 0 1 1 1v18l-3-2-2 2-2-2-2 2-2-2-3 2V3a1 1 0 0 1 1-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>',
+  trash:_S+'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
+  card:_S+'<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
+  gear:_S+'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  calendar:_S+'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  archive:_S+'<rect x="2" y="4" width="20" height="5" rx="1"/><path d="M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"/><line x1="10" y1="13" x2="14" y2="13"/></svg>',
+  pencil:_S+'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  plus:_S+'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  cart:_S+'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',
+  sheet:_S+'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>'
+};
+function paintIcons(){document.querySelectorAll('[data-ico]').forEach(el=>{const n=el.getAttribute('data-ico');if(ICON[n])el.insertAdjacentHTML('afterbegin',ICON[n]);el.removeAttribute('data-ico');});}
+
 updateProdCount();
 renderCart();
 applyConfig();
+paintIcons();
+migrateDailyOnce();   // consolida totales de ventas viejas la primera vez
+prunePersistSales();  // deja en el historial solo los últimos días
 
 let clockTimer=null;
 function tickClock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});}
@@ -545,7 +576,7 @@ function renderCart(){
   saveCart();
   const tbody=document.getElementById('cartBody');
   if(!cart.length){
-    tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🛒</div><div class="empty-text">Sin productos en la venta.<br>Escaneá o escribí un nombre para comenzar.</div></div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">${ICON.cart}</div><div class="empty-text">Sin productos en la venta.<br>Escaneá o escribí un nombre para comenzar.</div></div></td></tr>`;
     document.getElementById('itemCount').textContent='0';
     document.getElementById('unitCount').textContent='0';
     document.getElementById('totalAmount').textContent='$0';
@@ -592,10 +623,36 @@ function openCobro(){
   document.getElementById('cobroOverlay').classList.add('open');
 }
 function closeCobro(){document.getElementById('cobroOverlay').classList.remove('open');focusInput();}
+/* Clave de día local YYYY-MM-DD */
+function dayKeyOf(dt){const p=n=>String(n).padStart(2,'0');return dt.getFullYear()+'-'+p(dt.getMonth()+1)+'-'+p(dt.getDate());}
+/* Totales acumulados por día (se conservan para siempre, aunque se borre el detalle) */
+function getDaily(){try{const d=JSON.parse(localStorage.getItem(LS_DAILY)||'{}');return (d&&typeof d==='object'&&!Array.isArray(d))?d:{};}catch(e){return {};}}
+function saveDaily(d){try{localStorage.setItem(LS_DAILY,JSON.stringify(d));}catch(e){}}
+function addToDaily(dt,venta,costo,sign){
+  const d=getDaily(),k=dayKeyOf(dt),e=d[k]||{v:0,c:0,n:0};
+  e.v+=sign*venta;e.c+=sign*costo;e.n+=sign;
+  if(e.n<=0&&e.v<=0&&e.c<=0)delete d[k];else d[k]=e;
+  saveDaily(d);
+}
+/* Migración única: si aún no existen los totales diarios, se calculan desde el historial actual */
+function migrateDailyOnce(){
+  if(localStorage.getItem(LS_DAILY)!==null)return;
+  const d={};
+  getSales().forEach(s=>{const dt=new Date(s.date);if(isNaN(dt))return;const k=dayKeyOf(dt),e=d[k]||{v:0,c:0,n:0};e.v+=s.total||0;e.c+=saleCost(s);e.n++;d[k]=e;});
+  saveDaily(d);
+}
+/* El historial detallado solo conserva los últimos SALES_KEEP_DAYS días (para poder anular) */
+function pruneSales(sales){
+  const cutoff=Date.now()-SALES_KEEP_DAYS*864e5;
+  return sales.filter(s=>{const t=new Date(s.date).getTime();return !isNaN(t)&&t>=cutoff;});
+}
+function prunePersistSales(){try{localStorage.setItem(LS_SALES,JSON.stringify(pruneSales(getSales())));}catch(e){}}
+
 function saveSale(sale){
   try{
-    const sales=JSON.parse(localStorage.getItem(LS_SALES)||'[]');
+    let sales=getSales();
     sales.push(sale);
+    sales=pruneSales(sales);
     localStorage.setItem(LS_SALES,JSON.stringify(sales));
   }catch(e){/* almacenamiento lleno o no disponible: la venta igual se completa */}
 }
@@ -603,11 +660,14 @@ function finalizarVenta(){
   if(!cart.length){closeCobro();return;}
   const total=cart.reduce((s,i)=>s+i.sale_price*i.qty,0);
   const units=cart.reduce((s,i)=>s+i.qty,0);
+  const costo=cart.reduce((s,i)=>s+(i.cost_price||0)*i.qty,0);
+  const now=new Date();
   saveSale({
-    date:new Date().toISOString(),
+    date:now.toISOString(),
     total,units,
     items:cart.map(it=>({barcode:it.barcode,description:it.description,sale_price:it.sale_price,cost_price:it.cost_price||0,qty:it.qty}))
   });
+  addToDaily(now,total,costo,1);   // suma a los totales de estadísticas
   cart=[];selRow=-1;
   closeCobro();
   renderCart();
@@ -718,25 +778,22 @@ function getSales(){try{const s=JSON.parse(localStorage.getItem(LS_SALES)||'[]')
 function saleCost(s){return (s.items||[]).reduce((a,it)=>a+(it.cost_price||0)*it.qty,0);}
 function monthLabel(mk){const p=mk.split('-');const t=new Date(+p[0],+p[1]-1,1).toLocaleDateString('es-AR',{month:'long',year:'numeric'});return t.charAt(0).toUpperCase()+t.slice(1);}
 function openReport(){
-  const sales=getSales();
+  const byDay=getDaily();
   const body=document.getElementById('repBody');
-  if(!sales.length){body.innerHTML='<div class="rep-empty">No hay ventas registradas.</div>';document.getElementById('repOverlay').classList.add('open');return;}
+  const dayKeys=Object.keys(byDay);
+  if(!dayKeys.length){body.innerHTML='<div class="rep-empty">No hay ventas registradas.</div>';document.getElementById('repOverlay').classList.add('open');return;}
   const d2=n=>String(n).padStart(2,'0');
-  const byDay={},byMonth={};
-  sales.forEach(s=>{
-    const dt=new Date(s.date);if(isNaN(dt))return;
-    const venta=s.total||0,costo=saleCost(s);
-    const dk=dt.getFullYear()+'-'+d2(dt.getMonth()+1)+'-'+d2(dt.getDate());
-    const mk=dt.getFullYear()+'-'+d2(dt.getMonth()+1);
-    (byDay[dk]||(byDay[dk]={v:0,c:0,n:0}));byDay[dk].v+=venta;byDay[dk].c+=costo;byDay[dk].n++;
-    (byMonth[mk]||(byMonth[mk]={v:0,c:0,n:0}));byMonth[mk].v+=venta;byMonth[mk].c+=costo;byMonth[mk].n++;
+  const byMonth={};
+  dayKeys.forEach(dk=>{
+    const mk=dk.slice(0,7),g=byDay[dk];
+    (byMonth[mk]||(byMonth[mk]={v:0,c:0,n:0}));byMonth[mk].v+=g.v;byMonth[mk].c+=g.c;byMonth[mk].n+=g.n;
   });
   const now=new Date();
   const curMk=now.getFullYear()+'-'+d2(now.getMonth()+1);
   const money=(v,cls)=>`<td${cls?' class="'+cls+'"':''}>$${fmt(v)}</td>`;
   // Mes actual: una fila por día
   const curDays=Object.keys(byDay).filter(k=>k.startsWith(curMk+'-')).sort().reverse();
-  let html='<div class="rep-sect">📅 '+monthLabel(curMk)+'</div>';
+  let html='<div class="rep-sect">'+ICON.calendar+monthLabel(curMk)+'</div>';
   if(!curDays.length){
     html+='<div class="rep-empty" style="padding:24px">Sin ventas este mes.</div>';
   }else{
@@ -756,7 +813,7 @@ function openReport(){
     const rows=prevMonths.map(mk=>{const g=byMonth[mk];
       return `<tr><td>${monthLabel(mk)} · ${g.n} v</td>${money(g.v)}${money(g.c,'cost-c')}${money(g.v-g.c,'gain')}</tr>`;
     }).join('');
-    html+=`<div class="rep-sect" style="margin-top:18px">📆 Meses anteriores</div>
+    html+=`<div class="rep-sect" style="margin-top:18px">${ICON.archive}Meses anteriores</div>
       <div class="rep-scroll"><table class="rep-table">
       <thead><tr><th>Mes</th><th>Venta</th><th>Costo</th><th>Ganancia</th></tr></thead>
       <tbody>${rows}</tbody></table></div>`;
@@ -788,8 +845,8 @@ function renderProducts(){
       </div>
       <div class="mng-price">$${fmt(p.sale_price)}</div>
       <div class="mng-acts">
-        <button class="icon-btn" title="Editar" onclick="editProduct(${i})">✏️</button>
-        <button class="icon-btn del" title="Borrar" onclick="deleteProduct(${i})">🗑</button>
+        <button class="icon-btn" title="Editar" onclick="editProduct(${i})">${ICON.pencil}</button>
+        <button class="icon-btn del" title="Borrar" onclick="deleteProduct(${i})">${ICON.trash}</button>
       </div>
     </div>`).join('')
     +(items.length>LIMIT?`<div class="mng-note">Mostrando ${LIMIT} de ${items.length}. Refiná la búsqueda para ver más.</div>`:'');
@@ -840,7 +897,7 @@ function renderHistory(){
   const sales=getSales();
   const q=document.getElementById('histSearch').value.trim().toLowerCase();
   const list=document.getElementById('histList');
-  if(!sales.length){list.innerHTML='<div class="mng-empty">No hay ventas registradas.</div>';return;}
+  if(!sales.length){list.innerHTML='<div class="mng-empty">No hay ventas en los últimos 7 días.</div>';return;}
   let rows=sales.map((s,idx)=>({s,idx}));
   if(q){
     rows=rows.filter(({s})=>{
@@ -872,8 +929,10 @@ function voidSale(idx){
   const sales=getSales();
   const s=sales[idx];if(!s)return;
   if(!confirm('¿Anular esta venta por $'+fmt(s.total||0)+'?\nEsta acción no se puede deshacer.'))return;
+  const dt=new Date(s.date);
   sales.splice(idx,1);
   try{localStorage.setItem(LS_SALES,JSON.stringify(sales));}catch(e){}
+  if(!isNaN(dt))addToDaily(dt,s.total||0,saleCost(s),-1);   // resta de los totales de estadísticas
   renderHistory();
   showFlash('✔ Venta anulada','#16a34a',1400);
 }
