@@ -82,9 +82,6 @@ td{padding:14px 20px;font-size:15px;background:#f5f5f5;color:#111;}
 .empty-state{text-align:center;padding:80px 20px;}
 .empty-icon{font-size:60px;margin-bottom:16px;opacity:.2;}
 .empty-text{color:var(--muted);font-size:16px;line-height:1.6;}
-.notfound-state{text-align:center;padding:80px 20px;background:#fff0f2;}
-.notfound-icon{font-size:60px;margin-bottom:16px;opacity:.5;}
-.notfound-text{color:#c0394a;font-size:16px;line-height:1.6;font-weight:500;}
 .bottombar{background:var(--white);border-top:2px solid var(--border);padding:14px 28px;display:flex;align-items:center;gap:20px;flex-shrink:0;box-shadow:0 -2px 12px rgba(26,95,212,.07);}
 .binfo{font-size:15px;color:var(--muted);font-weight:500;}
 .binfo strong{color:var(--text);font-size:16px;}
@@ -254,10 +251,14 @@ td{padding:14px 20px;font-size:15px;background:#f5f5f5;color:#111;}
 
 <script>
 const LS='pos_cunados_v1';
+const LS_CART='pos_cunados_cart_v1';
+const LS_SALES='pos_cunados_sales_v1';
 let products=JSON.parse(localStorage.getItem(LS)||'[]');
 let cart=[],selRow=-1,sugIdx=-1,sugHits=[];
+try{cart=JSON.parse(localStorage.getItem(LS_CART)||'[]');if(!Array.isArray(cart))cart=[];}catch(e){cart=[];}
 
 updateProdCount();
+renderCart();
 
 let clockTimer=null;
 function tickClock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});}
@@ -289,7 +290,7 @@ function onSearchInput(val){
   if(!v){closeSug();return;}
   if(/^\d{4,}$/.test(v)){
     const p=findByCode(v);
-    if(p){sugHits=[p];showBadge('found','✓ '+p.description);closeSug();}
+    if(p){showBadge('found','✓ '+p.description);closeSug();}
     else closeSug();
     return;
   }
@@ -345,12 +346,6 @@ function findByCode(code){
   return products.find(p=>{const pc=p.barcode.replace(/^0+(?=\d)/,'');return pc===c||p.barcode===code;});
 }
 
-function showNotFound(){
-  if(cart.length)return; // solo mostrar si el carrito está vacío, sino no reemplazar
-  const tbody=document.getElementById('cartBody');
-  tbody.innerHTML=`<tr><td colspan="6"><div class="notfound-state"><div class="notfound-icon">🔍</div><div class="notfound-text">Producto no encontrado.<br>Verificá el código e intentá de nuevo.</div></div></td></tr>`;
-  setTimeout(()=>{if(!cart.length)renderCart();},2000);
-}
 function showBadge(type,msg){const el=document.getElementById('searchBadge');el.className='search-badge '+type;el.textContent=msg;}
 function hideBadge(){document.getElementById('searchBadge').className='search-badge';}
 
@@ -361,7 +356,10 @@ function addToCart(p){
   renderCart();
 }
 
+function saveCart(){try{localStorage.setItem(LS_CART,JSON.stringify(cart));}catch(e){}}
+
 function renderCart(){
+  saveCart();
   const tbody=document.getElementById('cartBody');
   if(!cart.length){
     tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🛒</div><div class="empty-text">Sin productos en la venta.<br>Escaneá o escribí un nombre para comenzar.</div></div></td></tr>`;
@@ -399,11 +397,39 @@ function cancelarVenta(){cart=[];selRow=-1;renderCart();focusInput();}
 
 function openCobro(){
   if(!cart.length){showFlash('🛒 Sin productos en la venta','#b45309',1800);return;}
-  finalizarVenta();
+  const list=document.getElementById('cobroList');
+  list.innerHTML=cart.map(it=>`
+    <div class="cobro-row">
+      <div class="cobro-desc">${esc(it.description)}</div>
+      <div class="cobro-qty">${it.qty} × $${fmt(it.sale_price)}</div>
+      <div class="cobro-subtot">$${fmt(it.sale_price*it.qty)}</div>
+    </div>`).join('');
+  const total=cart.reduce((s,i)=>s+i.sale_price*i.qty,0);
+  document.getElementById('cobroTotal').textContent='$'+fmt(total);
+  document.getElementById('cobroOverlay').classList.add('open');
 }
 function closeCobro(){document.getElementById('cobroOverlay').classList.remove('open');focusInput();}
+function saveSale(sale){
+  try{
+    const sales=JSON.parse(localStorage.getItem(LS_SALES)||'[]');
+    sales.push(sale);
+    localStorage.setItem(LS_SALES,JSON.stringify(sales));
+  }catch(e){/* almacenamiento lleno o no disponible: la venta igual se completa */}
+}
 function finalizarVenta(){
-  cart=[];selRow=-1;renderCart();focusInput();
+  if(!cart.length){closeCobro();return;}
+  const total=cart.reduce((s,i)=>s+i.sale_price*i.qty,0);
+  const units=cart.reduce((s,i)=>s+i.qty,0);
+  saveSale({
+    date:new Date().toISOString(),
+    total,units,
+    items:cart.map(it=>({barcode:it.barcode,description:it.description,sale_price:it.sale_price,qty:it.qty}))
+  });
+  cart=[];selRow=-1;
+  closeCobro();
+  renderCart();
+  focusInput();
+  showFlash('✔ Venta cobrada — $'+fmt(total),'#16a34a',1800);
 }
 
 function openImport(){document.getElementById('impOverlay').classList.add('open');document.getElementById('progWrap').style.display='none';document.getElementById('impResult').style.display='none';}
@@ -427,7 +453,7 @@ async function processFile(file){
   setProg(25,'Detectando columnas...');await sleep(60);
 
   // Detectar fila de encabezado
-  let cB=0,cD=1,cS=8,dStart=1;
+  let cB=0,cD=1,cS=8,cC=2,dStart=1;
   for(let r=0;r<Math.min(6,rows.length);r++){
     const row=rows[r].map(c=>String(c).toLowerCase().trim());
     let foundHeader=false;
@@ -435,6 +461,7 @@ async function processFile(file){
       if(/^cod/.test(c)||/barr/.test(c)){cB=i;foundHeader=true;}
       if(/^desc/.test(c)||/^produc/.test(c)||/^nombre/.test(c)){cD=i;foundHeader=true;}
       if(/precio.?venta|p\.?venta/.test(c)){cS=i;}
+      if(/precio.?costo|p\.?costo|^costo/.test(c)){cC=i;}
     });
     if(foundHeader){dStart=r+1;break;}
   }
@@ -450,10 +477,9 @@ async function processFile(file){
     chunk.forEach(row=>{
       const barcode=String(row[cB]).trim().replace(/\.0+$/,'');
       const description=String(row[cD]).trim();
-      // Columna I (índice 8) = Precio Venta — siempre ceil
-      const saleVal=row[cS];
-      const sale=Math.ceil(parseFloat(saleVal)||0);
-      const cost=Math.ceil(parseFloat(row[2])||0);
+      // Precio Venta (columna detectada) — siempre ceil
+      const sale=Math.ceil(parseNum(row[cS]));
+      const cost=Math.ceil(parseNum(row[cC]));
       if(!barcode||!description||barcode.length<3){skipped++;return;}
       const ex=map.get(barcode);
       if(ex){
@@ -474,6 +500,8 @@ async function processFile(file){
   showImpResult('ok',
     `✔ Importación completada\n\n`+
     `• ${added} productos nuevos agregados\n`+
+    `• ${updated} precios/descripciones actualizados\n`+
+    `• ${skipped} filas omitidas\n`+
     `📦 Total en base: ${products.length} productos`
   );
 }
@@ -489,6 +517,16 @@ function showImpResult(type,msg){const el=document.getElementById('impResult');e
 function updateProdCount(){document.getElementById('prodCount').textContent=products.length+' productos';}
 function showFlash(msg,bg,ms){const el=document.getElementById('flash');el.textContent=msg;el.style.background=bg;el.style.display='block';setTimeout(()=>el.style.display='none',ms);}
 function fmt(n){return Math.ceil(+n||0).toLocaleString('es-AR');}
+function parseNum(v){
+  if(typeof v==='number')return isFinite(v)?v:0;
+  let s=String(v).trim();
+  if(!s)return 0;
+  // Formato AR con coma decimal (ej "1.234,50"): quitar miles (.) y usar . como decimal
+  if(/,\d{1,2}$/.test(s))s=s.replace(/\./g,'').replace(',','.');
+  else s=s.replace(/,/g,''); // coma como separador de miles
+  const n=parseFloat(s.replace(/[^\d.\-]/g,''));
+  return isFinite(n)?n:0;
+}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 </script>
