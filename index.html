@@ -346,7 +346,10 @@ td{padding:14px 20px;font-size:15px;background:#f5f5f5;color:#111;}
   <div class="modal">
     <div class="modal-header">
       <div class="modal-icon" data-ico="gear"></div>
-      <div class="modal-title">Configuración</div>
+      <div class="modal-title" id="cfgTitle">Configuración</div>
+    </div>
+    <div id="cfgWelcome" hidden style="background:var(--blue-lt);border:1px solid var(--blue-md);border-radius:var(--r);padding:12px 14px;margin-bottom:18px;font-size:14px;line-height:1.5;color:var(--text)">
+      Configurá tu negocio para empezar: nombre, color y logo. Podés cambiar estos datos cuando quieras desde el botón de Configuración (arriba a la derecha).
     </div>
     <div class="cfg-field">
       <label class="cfg-label">Nombre del negocio</label>
@@ -369,8 +372,8 @@ td{padding:14px 20px;font-size:15px;background:#f5f5f5;color:#111;}
       <input type="file" id="cfgLogoInput" accept="image/*" style="display:none" onchange="cfgLogoSelected(this)">
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeConfig()">Cancelar</button>
-      <button class="btn btn-green" onclick="saveConfig()">Guardar</button>
+      <button class="btn btn-ghost" id="cfgCancelBtn" onclick="closeConfig()">Cancelar</button>
+      <button class="btn btn-green" id="cfgSaveBtn" onclick="saveConfig()">Guardar</button>
     </div>
   </div>
 </div>
@@ -943,15 +946,21 @@ function voidSale(idx){
 }
 
 /* ===== CONFIGURACIÓN ===== */
-let cfgDraftLogo=null;
-function openConfig(){
-  document.getElementById('cfgName').value=config.name;
+let cfgDraftLogo=null,cfgFirstRun=false;
+function openConfig(firstRun){
+  cfgFirstRun=!!firstRun;
+  document.getElementById('cfgName').value=firstRun?'':config.name;
   document.getElementById('cfgColor').value=config.color;
-  cfgDraftLogo=config.logo;
-  setLogoPreview(config.logo);
+  cfgDraftLogo=firstRun?null:config.logo;
+  setLogoPreview(cfgDraftLogo);
+  document.getElementById('cfgTitle').textContent=firstRun?'¡Bienvenido! Configurá tu negocio':'Configuración';
+  document.getElementById('cfgWelcome').hidden=!firstRun;
+  document.getElementById('cfgCancelBtn').style.display=firstRun?'none':'';
+  document.getElementById('cfgSaveBtn').textContent=firstRun?'Empezar':'Guardar';
   document.getElementById('cfgOverlay').classList.add('open');
+  if(firstRun)setTimeout(()=>document.getElementById('cfgName').focus(),50);
 }
-function closeConfig(){document.getElementById('cfgOverlay').classList.remove('open');focusInput();}
+function closeConfig(){if(cfgFirstRun)return;document.getElementById('cfgOverlay').classList.remove('open');focusInput();}
 function setLogoPreview(logo){
   const el=document.getElementById('cfgLogoPrev');
   if(logo)el.innerHTML=`<img src="${logo}" alt="logo">`;
@@ -976,13 +985,16 @@ function cfgLogoSelected(inp){
   fr.readAsDataURL(f);
 }
 function saveConfig(){
+  const name=document.getElementById('cfgName').value.trim();
+  if(cfgFirstRun&&!name){showFlash('⚠ Ingresá el nombre del negocio','#dc2626',2200);document.getElementById('cfgName').focus();return;}
   const prev=JSON.stringify(config);
-  config.name=document.getElementById('cfgName').value.trim()||'Mi Negocio';
+  config.name=name||'Mi Negocio';
   config.color=document.getElementById('cfgColor').value||CFG_DEFAULT.color;
   config.logo=cfgDraftLogo;
   try{localStorage.setItem(LS_CFG,JSON.stringify(config));}
   catch(e){config=JSON.parse(prev);showFlash('⚠ No se pudo guardar (imagen muy grande)','#dc2626',2400);return;}
   applyConfig();
+  cfgFirstRun=false;
   closeConfig();
   showFlash('✔ Configuración guardada','#16a34a',1500);
 }
@@ -1012,6 +1024,9 @@ function shades(hex){
 function hexToRgb(h){h=String(h||'').replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16)||0;return[(n>>16)&255,(n>>8)&255,n&255];}
 function rgbToHex(a){return'#'+a.map(x=>Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0')).join('');}
 function mix(rgb,target,t){return rgb.map((c,i)=>c+(target[i]-c)*t);}
+
+// Primer arranque: si no hay configuración guardada, pedir los datos del negocio
+if(localStorage.getItem(LS_CFG)===null)openConfig(true);
 </script>
 </body>
 </html>
